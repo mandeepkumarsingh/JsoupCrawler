@@ -8,6 +8,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
 public class BaseSetup {
+	/**
 	public static  WebDriver driver;
 	@BeforeClass
 	public static void openBrowser(String browser){
@@ -50,9 +51,9 @@ public class BaseSetup {
 			System.out.println("Exception occured while closing the browser");
 		}
 	}
-	
+	*/
 
 public static void main( String args[]){
-	BaseSetup.openBrowser("chrome");
+	
 }
 }

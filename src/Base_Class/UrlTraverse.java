@@ -27,7 +27,7 @@ public class UrlTraverse {
 			if(value[0].contains("4") || value[0].contains("5")){
 				System.out.println("status code is "+value[0]+" failed url is :"+url);
 				if(value[1].contains("DAMN") || value[1].contains("This page isn’t working")){
-
+                   
 					System.out.println("Page not working"+url);
 				}
 
@@ -43,6 +43,7 @@ public class UrlTraverse {
 		try{
 			HttpClient httpclient=HttpClientBuilder.create().build();
 			HttpGet httpget=new HttpGet(url);
+			httpget.addHeader("X-Api_Client", "desktop");
 			HttpResponse response=httpclient.execute(httpget);
 			String status=response.getStatusLine().toString();
 			HttpEntity responseentity=response.getEntity();

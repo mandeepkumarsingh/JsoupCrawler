@@ -137,12 +137,20 @@ public class GoogleSheet {
 
 		}
 	}
+	/** Read From the google sheet*/
+	public static void readAllUrls(){
+		String sheetid="1fwA5uelz_qpESVk-DcE4LeJq3_pWL5GXhqXQqaE4VxI";
+		String sheetRange="A:C!";
+	     
+		
+		
+	}
 
 	public static void main(String args[]){
 		//		getSpreadSheetRecords("1fwA5uelz_qpESVk-DcE4LeJq3_pWL5GXhqXQqaE4VxI","A:C");
-		Set<String>set1=new HashSet<String>();
-		set1.add("https://ww.lenskart.com");
-		set1.add("Http://javatpoint.com");
-		writeTotalUrl(set1);
+//		Set<String>set1=new HashSet<String>();
+//		set1.add("https://ww.lenskart.com");
+//		set1.add("Http://javatpoint.com");
+//		writeTotalUrl(set1);
 	}
 }
