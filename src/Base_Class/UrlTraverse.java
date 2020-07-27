@@ -20,21 +20,25 @@ public class UrlTraverse {
 
 
 
-	public static void getFailedUrl(String url){
-		try{
+	public static String  getFailedUrl(String url){
+		String result = null;
+		try {
+             
 			String pageValue=urlStatus(url);
 			String [] value=pageValue.split("##");
 			if(value[0].contains("4") || value[0].contains("5")){
 				System.out.println("status code is "+value[0]+" failed url is :"+url);
 				if(value[1].contains("DAMN") || value[1].contains("This page isn’t working")){
-                   
 					System.out.println("Page not working"+url);
 				}
-
+				result="Failed url:-  " + url +" status code " +value[0];
 			}
 		}catch(Exception e){
 			System.out.println("Exception occured while geeting the failure url"+url);
+
 		}
+		return result;
+		
 	}
 
 

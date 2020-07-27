@@ -99,7 +99,7 @@ public class GoogleSheet {
 				.setApplicationName(APPLICATION_NAME)
 				.build();
 	}
-          /** getting data from google sheet*/
+	/** getting data from google sheet*/
 	public static void getSpreadSheetRecords(String sheetId,String range){
 		try{
 			Sheets sheet=getSheetsService();
@@ -116,13 +116,14 @@ public class GoogleSheet {
 			Sheets sheet=getSheetsService();
 			ValueRange valrange=new ValueRange();
 			List<ValueRange>data=new ArrayList<ValueRange>();
-			int counter =1; 
+			int counter =2; 
 			for ( Object url:globalUrl){
 				data.add(new ValueRange().setRange("A"+counter).setValues(Arrays.asList(Arrays.asList(url)))
 						.setMajorDimension("ROWS"));
 				counter++;
 
 			}
+
 			BatchUpdateValuesRequest batchBody = new BatchUpdateValuesRequest()
 					.setValueInputOption("USER_ENTERED")
 					.setData(data);
@@ -134,23 +135,24 @@ public class GoogleSheet {
 			System.out.println("Written in google sheet");
 		}catch(Exception e){
 
-
+        System.out.println("Exception Occured while written in gsheet "+e);
 		}
 	}
 	/** Read From the google sheet*/
 	public static void readAllUrls(){
 		String sheetid="1fwA5uelz_qpESVk-DcE4LeJq3_pWL5GXhqXQqaE4VxI";
 		String sheetRange="A:C!";
-	     
-		
-		
-	}
 
+
+
+	}
+/**
 	public static void main(String args[]){
 		//		getSpreadSheetRecords("1fwA5uelz_qpESVk-DcE4LeJq3_pWL5GXhqXQqaE4VxI","A:C");
-//		Set<String>set1=new HashSet<String>();
-//		set1.add("https://ww.lenskart.com");
-//		set1.add("Http://javatpoint.com");
-//		writeTotalUrl(set1);
+		//		Set<String>set1=new HashSet<String>();
+		//		set1.add("https://ww.lenskart.com");
+		//		set1.add("Http://javatpoint.com");
+		//		writeTotalUrl(set1);
 	}
+	**/
 }

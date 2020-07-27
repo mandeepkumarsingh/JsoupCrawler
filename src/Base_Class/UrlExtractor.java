@@ -12,15 +12,20 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.openqa.selenium.NoSuchElementException;
 
 public class UrlExtractor {
 	public static List<String> urlExtractors(String mainUrl) {
 		List<String> urlList = null;
 		try {
 			urlList = new ArrayList<String>();
-			Document doc = Jsoup.connect(mainUrl).get();
+			
+				Document doc = Jsoup.connect(mainUrl).get();
+			
 			String title = doc.title();
 			Elements links = doc.select("a[href]");
+			Elements linkImage = doc.select("img[src]");
+			//			Elements linksscript=doc.select("script[src]");
 			for (Element link : links) {
 				if (link.attr("href").startsWith("/")) {
 					String url = "https://www.lenskart.com" + link.attr("href");
@@ -30,12 +35,18 @@ public class UrlExtractor {
 					urlList.add(url);
 				}
 			}
-
+			for (Element link : linkImage) {
+				urlList.add(link.attr("src"));
+			}
 			//			System.out.println(title + " current page title  " + urlList.size());
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
+			
+			System.out.println("Exception occured while extracting urls "+e);
 		}
 		return urlList;
 	}
+
 
 	public static Set <String> totalurl(String url) {
 		Set<String> globalurl=new HashSet<String>();
@@ -48,15 +59,27 @@ public class UrlExtractor {
 				globalurl.addAll(secondlist);
 			}
 		} catch (Exception e) {
-			System.out.println("Exception occured while getting url at  level " + e);
+			System.out.println("Exception occured while getting url at second  level " + e);
 		}
 
 		return globalurl;
 	}
+	public static void assertOnTotalUrls(String baseurl) {
+
+		Set<String> failurls=new HashSet<String>();
+		try {
+			Set<String> globalurl=totalurl(baseurl);
+			for (String urls : globalurl) {
+				failurls.add(UrlTraverse. getFailedUrl(urls));	
+			}
+			GoogleSheet.writeTotalUrl(failurls);
+		}catch(Exception e) {
+			System.out.println("Exception Occered while writing the final fail urls "+e);
+		}
+	}
 
 	public static void main(String args[]) {
-		Set<String> globalurl=totalurl("https://www.lenskart.com");
-		System.out.println("Total url is "+globalurl.size());
-		GoogleSheet.writeTotalUrl(globalurl);
+		assertOnTotalUrls("https://www.lenskart.com");
+
 	}
 }
