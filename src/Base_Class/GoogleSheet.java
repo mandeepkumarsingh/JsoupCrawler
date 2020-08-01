@@ -26,6 +26,7 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.BatchUpdateValuesRequest;
 import com.google.api.services.sheets.v4.model.BatchUpdateValuesResponse;
+import com.google.api.services.sheets.v4.model.ClearValuesRequest;
 import com.google.api.services.sheets.v4.model.UpdateValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
@@ -110,13 +111,18 @@ public class GoogleSheet {
 		}
 	}
 	/**   Write in to the google sheet*/
+
 	public static void writeTotalUrl(Set<String> globalUrl){
 		try{
 			String sheetid="1fwA5uelz_qpESVk-DcE4LeJq3_pWL5GXhqXQqaE4VxI";
+			String sheetrange="A:B";
 			Sheets sheet=getSheetsService();
+			/** below code will delete the sheet data */
+			sheet.spreadsheets().values().clear(sheetid, sheetrange, new ClearValuesRequest()).execute();
 			ValueRange valrange=new ValueRange();
 			List<ValueRange>data=new ArrayList<ValueRange>();
-			int counter =2; 
+			int counter =1; 
+					
 			for ( Object url:globalUrl){
 				data.add(new ValueRange().setRange("A"+counter).setValues(Arrays.asList(Arrays.asList(url)))
 						.setMajorDimension("ROWS"));
@@ -135,7 +141,7 @@ public class GoogleSheet {
 			System.out.println("Written in google sheet");
 		}catch(Exception e){
 
-        System.out.println("Exception Occured while written in gsheet "+e);
+			System.out.println("Exception Occured while written in gsheet "+e);
 		}
 	}
 	/** Read From the google sheet*/
@@ -146,13 +152,14 @@ public class GoogleSheet {
 
 
 	}
-/**
-	public static void main(String args[]){
+	
+//	public static void main(String args[]){
 		//		getSpreadSheetRecords("1fwA5uelz_qpESVk-DcE4LeJq3_pWL5GXhqXQqaE4VxI","A:C");
-		//		Set<String>set1=new HashSet<String>();
-		//		set1.add("https://ww.lenskart.com");
-		//		set1.add("Http://javatpoint.com");
-		//		writeTotalUrl(set1);
-	}
-	**/
+				Set<String>set1=new HashSet<String>();
+//				set1.add("https://ww.lenskart.com");
+//				set1.add("Http://javatpoint.com");
+//				
+//		writeTotalUrl(set1);
+//	}
+	 
 }

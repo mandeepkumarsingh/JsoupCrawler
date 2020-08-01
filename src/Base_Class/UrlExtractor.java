@@ -1,5 +1,7 @@
 package Base_Class;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,29 +21,34 @@ public class UrlExtractor {
 		List<String> urlList = null;
 		try {
 			urlList = new ArrayList<String>();
-			
+			if(mainUrl.contains("static")) {
+				urlList.add(mainUrl);	
+			}else {
 				Document doc = Jsoup.connect(mainUrl).get();
-			
-			String title = doc.title();
-			Elements links = doc.select("a[href]");
-			Elements linkImage = doc.select("img[src]");
-			//			Elements linksscript=doc.select("script[src]");
-			for (Element link : links) {
-				if (link.attr("href").startsWith("/")) {
-					String url = "https://www.lenskart.com" + link.attr("href");
-					urlList.add(url);
-				} else if (link.attr("href").startsWith("https")) {
-					String url = link.attr("href");
-					urlList.add(url);
+
+				String title = doc.title();
+				Elements links = doc.select("a[href]");
+				Elements linkImage = doc.select("img[src]");
+				//			Elements linksscript=doc.select("script[src]");
+
+				for (Element link : links) {
+					if (link.attr("href").startsWith("/")&& link.attr("href").contains("lenskart") ) {
+						String url = "https://www.lenskart.com" + link.attr("href");
+						urlList.add(url);
+					} else if (link.attr("href").startsWith("https")) {
+						String url = link.attr("href");
+						urlList.add(url);
+					}
 				}
-			}
-			for (Element link : linkImage) {
-				urlList.add(link.attr("src"));
+
+				for (Element link : linkImage) {
+					urlList.add(mainUrl+"@"+link.attr("src"));
+				}
 			}
 			//			System.out.println(title + " current page title  " + urlList.size());
 		}
 		catch (Exception e) {
-			
+
 			System.out.println("Exception occured while extracting urls "+e);
 		}
 		return urlList;
@@ -55,8 +62,10 @@ public class UrlExtractor {
 			List<String> firslevel = urlExtractors(url);
 			globalurl.addAll(firslevel);
 			for (String list : firslevel) {
-				List<String> secondlist = urlExtractors(list);
-				globalurl.addAll(secondlist);
+				if(!list.contains("static")) {
+					List<String> secondlist = urlExtractors(list);
+					globalurl.addAll(secondlist);
+				}
 			}
 		} catch (Exception e) {
 			System.out.println("Exception occured while getting url at second  level " + e);
@@ -70,7 +79,15 @@ public class UrlExtractor {
 		try {
 			Set<String> globalurl=totalurl(baseurl);
 			for (String urls : globalurl) {
-				failurls.add(UrlTraverse. getFailedUrl(urls));	
+				if(urls.contains("@")) {
+					String [] imglink=	urls.split("@");
+					if(UrlTraverse. getFailedUrl(imglink[1])!=null) {
+						urls=imglink[0]+" :-- "+imglink[1];
+						failurls.add(urls);
+					}
+				}else {
+					failurls.add(UrlTraverse. getFailedUrl(urls));	
+				}
 			}
 			GoogleSheet.writeTotalUrl(failurls);
 		}catch(Exception e) {
@@ -79,7 +96,18 @@ public class UrlExtractor {
 	}
 
 	public static void main(String args[]) {
+		//		String action = args[0].trim();
+		//		if (action.contains("dummyurl")) {
+		//		assertOnTotalUrls("https://www.lenskart.com");
+		//		}else {
+		//			System.out.println("Invalid job name should have dummyurl at any position");
+		//		}
+		Instant starttime=Instant.now();
 		assertOnTotalUrls("https://www.lenskart.com");
+		Instant endTime=Instant.now();
+		Duration totalTime=Duration.between(starttime, endTime);
+		String executionTime=Long.toString(totalTime.toMinutes());
+		System.out.println("Total Exection Time : "+executionTime +"mins");
 
 	}
 }

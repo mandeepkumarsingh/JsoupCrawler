@@ -31,7 +31,7 @@ public class UrlTraverse {
 				if(value[1].contains("DAMN") || value[1].contains("This page isn’t working")){
 					System.out.println("Page not working"+url);
 				}
-				result="Failed url:-  " + url +" status code " +value[0];
+				result= url ;
 			}
 		}catch(Exception e){
 			System.out.println("Exception occured while geeting the failure url"+url);
@@ -56,7 +56,7 @@ public class UrlTraverse {
 
 		}catch(Exception e){
 
-			System.out.println("Exception occured while getting the satus code"+e);
+			System.out.println("Exception occured while getting the satus code of urls "+e);
 		}
 		return result;
 	}
