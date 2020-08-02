@@ -76,6 +76,7 @@ public class GoogleSheet {
 			// Load client secrets.
 			//        InputStream in =
 			//        		AuthorizationCodeFlow.class.getResourceAsStream("/client_secret.json");
+
 			File file= new File(a);
 			InputStream inpu=new DataInputStream(new FileInputStream(file));
 			GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(inpu));
@@ -88,7 +89,7 @@ public class GoogleSheet {
 			credential = new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
 			System.out.println("Credentials saved to " + DATA_STORE_DIR.getAbsolutePath());
 		}catch(Exception e){
-			System.out.println("exception occured while getting the credentials");
+			System.out.println("exception occured while getting the credentials"+e+e.getMessage());
 		}
 		return credential;
 	}
@@ -122,7 +123,7 @@ public class GoogleSheet {
 			ValueRange valrange=new ValueRange();
 			List<ValueRange>data=new ArrayList<ValueRange>();
 			int counter =1; 
-					
+
 			for ( Object url:globalUrl){
 				data.add(new ValueRange().setRange("A"+counter).setValues(Arrays.asList(Arrays.asList(url)))
 						.setMajorDimension("ROWS"));
@@ -152,14 +153,14 @@ public class GoogleSheet {
 
 
 	}
-	
-//	public static void main(String args[]){
-		//		getSpreadSheetRecords("1fwA5uelz_qpESVk-DcE4LeJq3_pWL5GXhqXQqaE4VxI","A:C");
-				Set<String>set1=new HashSet<String>();
-//				set1.add("https://ww.lenskart.com");
-//				set1.add("Http://javatpoint.com");
-//				
-//		writeTotalUrl(set1);
-//	}
-	 
+	//	
+	//	public static void main(String args[]){
+	//		//		getSpreadSheetRecords("1fwA5uelz_qpESVk-DcE4LeJq3_pWL5GXhqXQqaE4VxI","A:C");
+	//				Set<String>set1=new HashSet<String>();
+	//				set1.add("https://ww.lenskart.com");
+	//				set1.add("Http://javatpoint.com");
+	//				
+	//		writeTotalUrl(set1);
+	//	}
+
 }
