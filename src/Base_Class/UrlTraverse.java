@@ -3,8 +3,12 @@ package Base_Class;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -15,6 +19,9 @@ import org.apache.http.util.EntityUtils;
 
 import com.opencsv.CSVWriter;
 
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
+
 public class UrlTraverse {
 
 
@@ -22,41 +29,39 @@ public class UrlTraverse {
 
 	public static String  getFailedUrl(String url){
 		String result = null;
+		String pageValue;
 		try {
-             
-			String pageValue=urlStatus(url);
-			String [] value=pageValue.split("##");
-			if(value[0].contains("4") || value[0].contains("5")){
-				System.out.println("status code is "+value[0]+" failed url is :"+url);
-				if(value[1].contains("DAMN") || value[1].contains("This page isn’t working")){
-					System.out.println("Page not working"+url);
+			if(url.contains("lenskart")) {
+				pageValue=urlStatus(url);
+				if(pageValue!=null) {
+					if(pageValue.startsWith("4") || pageValue.startsWith("5")){
+						System.out.println("Not working :- "+url);
+						result= url;
+					}
 				}
-				result= url ;
 			}
+
 		}catch(Exception e){
 			System.out.println("Exception occured while geeting the failure url"+url);
-
+			result= url;
 		}
 		return result;
-		
+
 	}
 
 
-	public static String  urlStatus(String url){
-		String result = null;
+	public static String urlStatus(String url){
+		String result = null ;
 		try{
-			HttpClient httpclient=HttpClientBuilder.create().build();
-			HttpGet httpget=new HttpGet(url);
-			httpget.addHeader("X-Api_Client", "desktop");
-			HttpResponse response=httpclient.execute(httpget);
-			String status=response.getStatusLine().toString();
-			HttpEntity responseentity=response.getEntity();
-			String responsebody=EntityUtils.toString(responseentity);
-			result=status+"##"+responsebody;
+			RestAssured.baseURI=url;
+			Response res;
+			res=RestAssured.given().header("X-Api-Client", "desktop").when().get().then().extract().response();
+			result=Integer.toString(res.getStatusCode());
+			return result;
 
 		}catch(Exception e){
 
-			System.out.println("Exception occured while getting the satus code of urls "+e);
+			System.out.println("Exception occured while getting the satus code of urls "+url+e);
 		}
 		return result;
 	}

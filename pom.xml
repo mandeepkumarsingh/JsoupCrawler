@@ -43,12 +43,12 @@
   <artifactId>jsoup</artifactId>
   <version>1.12.1</version>
 </dependency>
-<dependency>
-    <groupId>io.rest-assured</groupId>
-    <artifactId>rest-assured</artifactId>
-    <version>3.0.0</version>
-    <scope>test</scope>
-</dependency>
+<!-- https://mvnrepository.com/artifact/io.rest-assured/rest-assured -->
+		<dependency>
+			<groupId>io.rest-assured</groupId>
+			<artifactId>rest-assured</artifactId>
+			<version>4.3.0</version>
+		</dependency>
 <!-- CSV dependencies  -->
 <dependency> 
     <groupId>com.opencsv</groupId> 
@@ -71,4 +71,17 @@
     <version>v4-rev493-1.23.0</version>
 </dependency>
   </dependencies>
+  <build> 
+ <sourceDirectory>src</sourceDirectory> 
+ <plugins>  
+ <plugin>  
+  <groupId>org.codehaus.mojo</groupId>  
+  <artifactId>exec-maven-plugin</artifactId>  
+   <version>1.4.0</version> 
+ <configuration>  
+     <mainClass>Base_Class.UrlExtractor</mainClass>
+     </configuration>   
+  </plugin>  
+ </plugins>  
+</build>  
 </project>
