@@ -56,7 +56,7 @@ public class UrlTraverse {
 
 		}catch(Exception e){
 
-			System.out.println("Exception occured while getting the satus code of urls "+e);
+			System.out.println("Exception occured while getting the satus code of urls "+e +url);
 		}
 		return result;
 	}
