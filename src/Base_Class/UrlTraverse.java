@@ -45,6 +45,7 @@ public class UrlTraverse {
 	public static String  urlStatus(String url){
 		String result = null;
 		try{
+			
 			HttpClient httpclient=HttpClientBuilder.create().build();
 			HttpGet httpget=new HttpGet(url);
 			httpget.addHeader("X-Api_Client", "desktop");
