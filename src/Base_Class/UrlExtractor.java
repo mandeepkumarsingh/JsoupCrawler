@@ -24,15 +24,16 @@ import org.openqa.selenium.NoSuchElementException;
 public class UrlExtractor {
 	public static long  totalextractedurls;
 	public static long  totalfailedurls;
+	public static Set<String > extrated=new HashSet<String>();
 	public static List<String> urlExtractors(String mainUrl) {
 		List<String> urlList = null;
 		try {
 			urlList = new ArrayList<String>();
-			if(mainUrl.contains("static")) {
-				urlList.add(mainUrl);	
+			if(mainUrl.contains("static")||extrated.contains(mainUrl) ) {
+				System.out.println(" do Nothing");
 			}else {
 				Document doc = Jsoup.connect(mainUrl).get();
-
+				extrated.add(mainUrl);
 				String title = doc.title();
 				Elements links = doc.select("a[href]");
 				Elements linkImage = doc.select("img[src]");
