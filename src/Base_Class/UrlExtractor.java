@@ -8,6 +8,8 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -19,6 +21,7 @@ public class UrlExtractor {
 	static Set<String> failurls=new HashSet<String>();
 	static Set<String> fetched=new HashSet<String>();
 	static HashSet<String> globalurl=new HashSet<String>();
+	static HashSet<String> globalurlImg=new HashSet<String>();
 	public static void urlExtractors(String mainUrl) {
 
 		try {
@@ -59,6 +62,8 @@ public class UrlExtractor {
 					}
 					if(assertOnTotalUrls(src.trim())) {
 						failurls.add(mainUrl+":-  "+src);
+					}else {
+						globalurlImg.add(mainUrl);
 					}
 				}
 			}
@@ -76,33 +81,54 @@ public class UrlExtractor {
 
 			urlExtractors(url);
 
-//			HashSet<String> localset=new HashSet<String>();
-//			localset=(HashSet)globalurl.clone();
-//			totalextractedurls += globalurl.size();
-//			System.out.println("Total urls at first level is :- " +totalextractedurls);
-//			globalurl.clear();
-//			int i= 1;
-//			for(String links:localset) {
-//				urlExtractors(links);
-//				 i++;
-//				 if(i==100) {
-//					 break;
-//				 }
-//			}
-//			localset.clear();
-			System.out.println("Total urls at second level :-  "+totalextractedurls);
+			final HashSet<String> localset=(HashSet)globalurl.clone();
+
 
 			//			localset=(HashSet)globalurl.clone();
+			totalextractedurls += globalurl.size()+globalurlImg.size();
+			System.out.println("Total urls at first level is :- " +totalextractedurls);
+			globalurl.clear();
+
+
+			ForkJoinPool forkpool = new ForkJoinPool(100);
+			forkpool.submit(()->localset.parallelStream().forEach(link->urlExtractors(link))).get();
+			forkpool.shutdown();
+			//			localset.parallelStream().forEach(link->{urlExtractors(link);});
+			//			for(String links:localset) {
+			//				urlExtractors(links);
+			//				 i++;
+			//				 if(i==100) {
+			//					 break;//
+			//				 }
+			//			}
+			//			localset.clear();
+			totalextractedurls+=globalurl.size()+failurls.size()+globalurlImg.size()+globalurlImg.size();
+			System.out.println("Total urls at second level :-  "+totalextractedurls);
+			//			final HashSet<String> localset1=(HashSet)globalurl.clone();
+			//						localset=(HashSet)globalurl.clone();
 			//			totalextractedurls += globalurl.size();
 			//			System.out.println("Total urls at second level"+totalextractedurls);
 			//			globalurl.clear();
 			//			for(String links:localset) {
 			//				urlExtractors(links);
 			//			}
-			//			System.out.println("Total urls at third level"+totalextractedurls+globalurl.size());
+			//			ForkJoinPool forkpool1 = new ForkJoinPool(59);
+			//			forkpool1.submit(()->localset1.parallelStream().forEach(link->urlExtractors(link))).get();
+			//			forkpool1.shutdown();
+			//			totalextractedurls+=globalurl.size()+failurls.size();
+			//			System.out.println("Total urls at third level"+totalextractedurls);
 
 
-		} catch (Exception e) {
+		} catch (ExecutionException e) {
+			System.out.println("got execution exception"+e);
+		}
+		catch (InterruptedException e) {
+			System.out.println("got Interrupted exception"+e);
+		}
+
+
+
+		catch (Exception e) {
 			System.out.println("Exception occured while getting url at second  level " + e);
 		}
 
@@ -171,10 +197,9 @@ public class UrlExtractor {
 		Duration totalTime=Duration.between(starttime, endTime);
 		String executionTime=Long.toString(totalTime.toMinutes());
 		System.out.println("Total Exection Time : "+executionTime +"  mins");
-		System.out.println("Total Url Traversed is:-"+totalextractedurls +failedsize);
+		System.out.println("Total Url Traversed is:-"+totalextractedurls);
 		System.out.println("Total Failed Url is :- "+failedsize);
 		updateProperties(totalextractedurls +failedsize,failedsize,executionTime);
-
 
 	}
 }
