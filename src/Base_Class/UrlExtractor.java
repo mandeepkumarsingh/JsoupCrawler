@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ForkJoinPool;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -25,6 +26,7 @@ public class UrlExtractor {
 	public static long  totalextractedurls;
 	public static long  totalfailedurls;
 	public static Set<String > extrated=new HashSet<String>();
+	public static Set<String > failurls=new HashSet<String>();
 	public static List<String> urlExtractors(String mainUrl) {
 		List<String> urlList = null;
 		try {
@@ -69,6 +71,7 @@ public class UrlExtractor {
 
 			List<String> firslevel = urlExtractors(url);
 			globalurl.addAll(firslevel);
+			System.out.println("Total urls at firstlevel is :- "+globalurl.size());
 			for (String list : firslevel) {
 				if(!list.contains("static")) {
 					List<String> secondlist = urlExtractors(list);
@@ -76,6 +79,7 @@ public class UrlExtractor {
 				}
 			}
 			totalextractedurls=globalurl.size();
+			System.out.println("Total urls at second level is "+totalextractedurls);
 		} catch (Exception e) {
 			System.out.println("Exception occured while getting url at second  level " + e);
 		}
@@ -83,26 +87,43 @@ public class UrlExtractor {
 		return globalurl;
 	}
 	public static void assertOnTotalUrls(String baseurl) {
-
-		Set<String> failurls=new HashSet<String>();
 		try {
 			Set<String> globalurl=totalurl(baseurl);
-			for (String urls : globalurl) {
-				if(urls.contains("@")) {
-					String [] imglink=	urls.split("@");
-					if(UrlTraverse. getFailedUrl(imglink[1])!=null) {
-						urls=imglink[0]+" :-- "+imglink[1];
-						failurls.add(urls);
-					}
-				}else {
-					failurls.add(UrlTraverse. getFailedUrl(urls));	
-				}
-			}
+			//			for (String urls : globalurl) {
+			//				if(urls.contains("@")) {
+			//					String [] imglink=	urls.split("@");
+			//					if(UrlTraverse. getFailedUrl(imglink[1])!=null) {
+			//						urls=imglink[0]+" :-- "+imglink[1];
+			//						failurls.add(urls);
+			//					}
+			//				}else {
+			//					failurls.add(UrlTraverse. getFailedUrl(urls));	
+			//				}
+			//			}
+
+			ForkJoinPool forkpool=new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+			forkpool.submit(()-> globalurl.parallelStream().forEach(link->updatefailurelist(link))).get();
+			forkpool.shutdown();
 			totalfailedurls=failurls.size();
 			GoogleSheet.writeTotalUrl(failurls);
 
 		}catch(Exception e) {
 			System.out.println("Exception Occered while writing the final fail urls "+e);
+		}
+	}
+	public static void updatefailurelist(String urls) {
+		try {
+			if(urls.contains("@")) {
+				String [] imglink=	urls.split("@");
+				if(UrlTraverse. getFailedUrl(imglink[1])!=null) {
+					urls=imglink[0]+" :-- "+imglink[1];
+					failurls.add(urls);
+				}
+			}else {
+				failurls.add(UrlTraverse. getFailedUrl(urls));	
+			}
+		}catch(Exception e) {
+			System.out.println("Exception occured while updating the failure list"+e);
 		}
 	}
 	public static void updateProperties(long totalUrls,long failedUrls,String totalExceutionTime){
@@ -129,7 +150,7 @@ public class UrlExtractor {
 		//			System.out.println("Invalid job name should have dummyurl at any position");
 		//		}
 		Instant starttime=Instant.now();
-		assertOnTotalUrls("https://www.lenskart.com/celebrate-diwali");
+		assertOnTotalUrls("https://www.lenskart.com");
 		Instant endTime=Instant.now();
 		Duration totalTime=Duration.between(starttime, endTime);
 		String executionTime=Long.toString(totalTime.toMinutes());
