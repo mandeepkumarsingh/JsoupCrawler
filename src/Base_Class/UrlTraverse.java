@@ -23,10 +23,6 @@ import io.restassured.RestAssured;
 import io.restassured.response.Response;
 
 public class UrlTraverse {
-
-
-
-
 	public static String  getFailedUrl(String url){
 		String result = null;
 		String pageValue;

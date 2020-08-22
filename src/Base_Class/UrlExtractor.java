@@ -10,6 +10,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -39,7 +40,7 @@ public class UrlExtractor {
 				for (Element link : links) {
 					url=null;
 					linkHref=link.attr("href");
-					if (linkHref.startsWith("/")&& linkHref.contains("lenskart") ) {
+					if (linkHref.startsWith("/")) {
 						url = "https://www.lenskart.com" + linkHref;
 					} else if (linkHref.startsWith("http")&& linkHref.contains("lenskart")) {
 						url = linkHref;
@@ -88,35 +89,27 @@ public class UrlExtractor {
 			totalextractedurls += globalurl.size()+globalurlImg.size();
 			System.out.println("Total urls at first level is :- " +totalextractedurls);
 			globalurl.clear();
-
-
-			ForkJoinPool forkpool = new ForkJoinPool(100);
-			forkpool.submit(()->localset.parallelStream().forEach(link->urlExtractors(link))).get();
+			ForkJoinPool forkpool = new ForkJoinPool();
+			ForkJoinPool forkpool1=new ForkJoinPool(Runtime.getRuntime().availableProcessors(),forkpool.getFactory(), forkpool.getUncaughtExceptionHandler(), false);
+			forkpool1.submit(()->localset.parallelStream().forEach(link->urlExtractors(link))).get();
+			forkpool1.shutdown();
+			forkpool1.awaitTermination(2, TimeUnit.MINUTES);
 			forkpool.shutdown();
-			//			localset.parallelStream().forEach(link->{urlExtractors(link);});
-			//			for(String links:localset) {
-			//				urlExtractors(links);
-			//				 i++;
-			//				 if(i==100) {
-			//					 break;//
-			//				 }
-			//			}
-			//			localset.clear();
+			forkpool1.awaitTermination(1, TimeUnit.MINUTES);
 			totalextractedurls+=globalurl.size()+failurls.size()+globalurlImg.size()+globalurlImg.size();
 			System.out.println("Total urls at second level :-  "+totalextractedurls);
-			//			final HashSet<String> localset1=(HashSet)globalurl.clone();
-			//						localset=(HashSet)globalurl.clone();
-			//			totalextractedurls += globalurl.size();
-			//			System.out.println("Total urls at second level"+totalextractedurls);
-			//			globalurl.clear();
-			//			for(String links:localset) {
-			//				urlExtractors(links);
-			//			}
-			//			ForkJoinPool forkpool1 = new ForkJoinPool(59);
-			//			forkpool1.submit(()->localset1.parallelStream().forEach(link->urlExtractors(link))).get();
-			//			forkpool1.shutdown();
-			//			totalextractedurls+=globalurl.size()+failurls.size();
-			//			System.out.println("Total urls at third level"+totalextractedurls);
+			final HashSet<String> localset1=(HashSet)globalurl.clone();
+			globalurl.clear();
+			ForkJoinPool forkpoolthird = new ForkJoinPool();
+			ForkJoinPool forkpoolthird1=new ForkJoinPool(Runtime.getRuntime().availableProcessors(),forkpoolthird.getFactory(), forkpoolthird.getUncaughtExceptionHandler(), false);
+			forkpoolthird1.submit(()->localset1.parallelStream().forEach(link->urlExtractors(link))).get();
+			forkpoolthird1.shutdown();
+			forkpoolthird1.awaitTermination(5, TimeUnit.MINUTES);
+			forkpoolthird.shutdown();
+			forkpoolthird.awaitTermination(2, TimeUnit.MINUTES);
+			totalextractedurls+=globalurl.size()+failurls.size();
+			System.out.println("Total urls at third level "+totalextractedurls);
+
 
 
 		} catch (ExecutionException e) {
@@ -145,10 +138,10 @@ public class UrlExtractor {
 			//			for (String urls : globalurl) {
 
 			String wah[]=baseurl.split("https://www.lenskart.com/");	
-			if(wah.length>1 && !wah[1].contains("/")&& UrlTraverse. getFailedUrl(baseurl)!=null ) {
+			if(wah.length>1 && !wah[1].contains("/")&& UrlTraverse.getFailedUrl(baseurl)!=null) {
 				failurls.add("Product_Url:-  "+baseurl);
 				result=true;
-			}else if(UrlTraverse. getFailedUrl(baseurl)!=null) {
+			}else if(UrlTraverse.getFailedUrl(baseurl)!=null) {
 				failurls.add(baseurl);
 				result=true;
 			}
