@@ -18,42 +18,32 @@ import com.opencsv.CSVWriter;
 public class UrlTraverse {
 
 
-
-
 	public static String  getFailedUrl(String url){
 		String result = null;
 		try {
-             
-			String pageValue=urlStatus(url);
-			String [] value=pageValue.split("##");
-			if(value[0].contains("4") || value[0].contains("5")){
-				System.out.println("status code is "+value[0]+" failed url is :"+url);
-				if(value[1].contains("DAMN") || value[1].contains("This page isn’t working")){
-					System.out.println("Page not working"+url);
-				}
+
+			String pageValue=urlStatus(url.trim());
+			if(pageValue.contains("4") || pageValue.contains("5")){
+				System.out.println("Page not working"+url);
 				result= url ;
 			}
+
 		}catch(Exception e){
 			System.out.println("Exception occured while geeting the failure url"+url);
 
 		}
 		return result;
-		
+
 	}
-
-
 	public static String  urlStatus(String url){
 		String result = null;
 		try{
-			
 			HttpClient httpclient=HttpClientBuilder.create().build();
 			HttpGet httpget=new HttpGet(url);
 			httpget.addHeader("X-Api_Client", "desktop");
 			HttpResponse response=httpclient.execute(httpget);
 			String status=response.getStatusLine().toString();
-			HttpEntity responseentity=response.getEntity();
-			String responsebody=EntityUtils.toString(responseentity);
-			result=status+"##"+responsebody;
+			result=status;
 
 		}catch(Exception e){
 
@@ -61,7 +51,6 @@ public class UrlTraverse {
 		}
 		return result;
 	}
-
 
 }
 

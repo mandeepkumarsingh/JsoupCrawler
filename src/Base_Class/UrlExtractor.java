@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -31,8 +32,8 @@ public class UrlExtractor {
 		List<String> urlList = null;
 		try {
 			urlList = new ArrayList<String>();
-			if(mainUrl.contains("static")||extrated.contains(mainUrl) ) {
-				System.out.println(" do Nothing");
+			if(extrated.contains(mainUrl)) {
+				System.out.println(" All ready extracted "+mainUrl);
 			}else {
 				Document doc = Jsoup.connect(mainUrl).get();
 				extrated.add(mainUrl);
@@ -42,17 +43,21 @@ public class UrlExtractor {
 				//			Elements linksscript=doc.select("script[src]");
 
 				for (Element link : links) {
-					if (link.attr("href").startsWith("/")&& link.attr("href").contains("lenskart") ) {
+					if (link.attr("href").startsWith("/")) {
 						String url = "https://www.lenskart.com" + link.attr("href");
 						urlList.add(url);
-					} else if (link.attr("href").startsWith("https")) {
+					} else if (link.attr("href").startsWith("http")&& link.attr("href").contains("lenskart")) {
 						String url = link.attr("href");
 						urlList.add(url);
 					}
 				}
 
 				for (Element link : linkImage) {
-					urlList.add(mainUrl+"@"+link.attr("src"));
+					String src=link.attr("src");
+					if(src.startsWith("//")) {
+						src="https:"+src;
+					}
+					urlList.add(mainUrl+"@"+src);
 				}
 			}
 			//			System.out.println(title + " current page title  " + urlList.size());
@@ -68,7 +73,6 @@ public class UrlExtractor {
 	public static Set <String> totalurl(String url) {
 		Set<String> globalurl=new HashSet<String>();
 		try {
-
 			List<String> firslevel = urlExtractors(url);
 			globalurl.addAll(firslevel);
 			System.out.println("Total urls at firstlevel is :- "+globalurl.size());
@@ -79,32 +83,40 @@ public class UrlExtractor {
 				}
 			}
 			totalextractedurls=globalurl.size();
-			System.out.println("Total urls at second level is "+totalextractedurls);
+			System.out.println("Total urls at second level are "+totalextractedurls);
 		} catch (Exception e) {
 			System.out.println("Exception occured while getting url at second  level " + e);
 		}
 
 		return globalurl;
 	}
+	public static Set<String> thirdlevelUrl(String url) {
+		Set<String> thirdlevel=new HashSet<String>();
+
+		try {
+			Set<String> globalthird=totalurl(url);
+			for (String list : globalthird) {
+				if(!list.contains("static")) {
+					List<String> thirdlist = urlExtractors(list);
+					thirdlevel.addAll(thirdlist);
+				}
+			}
+			totalextractedurls=thirdlevel.size();
+			System.out.println("Total urls at third level are "+totalextractedurls);
+		}catch(Exception e) {
+			System.out.println("Exception occured while getting the url at third level"+e);
+		}
+		return thirdlevel;
+	}
 	public static void assertOnTotalUrls(String baseurl) {
 		try {
-			Set<String> globalurl=totalurl(baseurl);
-			//			for (String urls : globalurl) {
-			//				if(urls.contains("@")) {
-			//					String [] imglink=	urls.split("@");
-			//					if(UrlTraverse. getFailedUrl(imglink[1])!=null) {
-			//						urls=imglink[0]+" :-- "+imglink[1];
-			//						failurls.add(urls);
-			//					}
-			//				}else {
-			//					failurls.add(UrlTraverse. getFailedUrl(urls));	
-			//				}
-			//			}
-
+			Set<String> globalurl=thirdlevelUrl(baseurl);
 			ForkJoinPool forkpool=new ForkJoinPool(Runtime.getRuntime().availableProcessors());
 			forkpool.submit(()-> globalurl.parallelStream().forEach(link->updatefailurelist(link))).get();
+			forkpool.awaitTermination(3, TimeUnit.MINUTES);
 			forkpool.shutdown();
 			totalfailedurls=failurls.size();
+			System.out.println("total failed urls are: - "+totalfailedurls);
 			GoogleSheet.writeTotalUrl(failurls);
 
 		}catch(Exception e) {
@@ -120,7 +132,12 @@ public class UrlExtractor {
 					failurls.add(urls);
 				}
 			}else {
-				failurls.add(UrlTraverse. getFailedUrl(urls));	
+				String wah[]=urls.split("https://www.lenskart.com/");	
+				if(wah.length>1 && !wah[1].contains("/")&& UrlTraverse.getFailedUrl(urls)!=null) {
+					failurls.add("Product_Url:-  "+urls);
+				}else {
+					failurls.add(UrlTraverse. getFailedUrl(urls));	
+				}
 			}
 		}catch(Exception e) {
 			System.out.println("Exception occured while updating the failure list"+e);
@@ -143,12 +160,6 @@ public class UrlExtractor {
 	}
 
 	public static void main(String args[]) {
-		//		String action = args[0].trim();
-		//		if (action.contains("dummyurl")) {
-		//		assertOnTotalUrls("https://www.lenskart.com");
-		//		}else {
-		//			System.out.println("Invalid job name should have dummyurl at any position");
-		//		}
 		Instant starttime=Instant.now();
 		assertOnTotalUrls("https://www.lenskart.com");
 		Instant endTime=Instant.now();
