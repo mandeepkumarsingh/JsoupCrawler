@@ -110,7 +110,7 @@ public class UrlExtractor {
 	}
 	public static void assertOnTotalUrls(String baseurl) {
 		try {
-			Set<String> globalurl=thirdlevelUrl(baseurl);
+			Set<String> globalurl=totalurl(baseurl);
 			ForkJoinPool forkpool=new ForkJoinPool(Runtime.getRuntime().availableProcessors());
 			forkpool.submit(()-> globalurl.parallelStream().forEach(link->updatefailurelist(link))).get();
 			forkpool.awaitTermination(3, TimeUnit.MINUTES);
